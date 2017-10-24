@@ -40,6 +40,9 @@ module Hire
     DUPLICATE_APPLICANT_MESSAGE = 'Duplicate applicant'.freeze
     INVALID_COMMAND_MESSAGE = 'Invalid command'.freeze
     INVALID_STAGE_MESSAGE = 'Invalid stage'.freeze
+    REJECTED_MESSAGE = 'Rejected '.freeze
+    HIRED_MESSAGE = 'Hired '.freeze
+    FAILED_TO_DECIDE_MESSAGE = 'Failed to decide for '.freeze
 
     def initialize
       @stages = []
@@ -90,6 +93,22 @@ module Hire
       else
         applicant.stage = stage
       end
+    end
+
+    def decide_applicant(email, decision)
+      applicant = find_applicant(email)
+      hired = decision == '1'
+      if !hired
+        puts REJECTED_MESSAGE + email
+      elsif applicant.stage == @stages.last
+        puts HIRED_MESSAGE + email
+      else
+        puts FAILED_TO_DECIDE_MESSAGE + email
+      end
+    end
+
+    def find_applicant(email)
+      @applicants.first { |a| a.email == email }
     end
   end
 end
