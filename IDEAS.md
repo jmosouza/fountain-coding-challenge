@@ -1,0 +1,2 @@
+- DEFINE:
+  - The README doesn't say what to do in case an invalid stage is entered.
