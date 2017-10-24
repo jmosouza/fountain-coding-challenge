@@ -28,16 +28,18 @@ module Hire
     COMMAND_MAP = {
       'DEFINE' => :define_stages,
       'CREATE' => :create_applicant,
-      'ADVANCE' => :define_applicant,
-      'DECIDE' => :define_applicant,
+      'ADVANCE' => :advance_applicant,
+      'DECIDE' => :decide_applicant,
       'STATS' => :show_stats
     }.freeze
 
     VALID_STAGES =
       %w[ManualReview PhoneInterview BackgroundCheck DocumentSigning].freeze
 
-    INVALID_COMMAND_MESSAGE = 'Invalid command'.freeze
+    ALREADY_IN_MESSAGE = 'Already in '.freeze
     DUPLICATE_APPLICANT_MESSAGE = 'Duplicate applicant'.freeze
+    INVALID_COMMAND_MESSAGE = 'Invalid command'.freeze
+    INVALID_STAGE_MESSAGE = 'Invalid stage'.freeze
 
     def initialize
       @stages = []
@@ -69,6 +71,24 @@ module Hire
         puts DUPLICATE_APPLICANT_MESSAGE
       else
         @applicants << Applicant.new(email: email, stage: @stages.first)
+      end
+    end
+
+    # Advance the applicant to the specified stage.
+    # If `stage` parameter is omitted, advance the applicant to the next stage.
+    def advance_applicant(email, stage = ''.freeze)
+      applicant = find_applicant(email)
+      if !applicant
+        puts NO_SELECTED_APPLICANT_MESSAGE
+      elsif [stage, @stages.last].include? applicant.stage
+        puts ALREADY_IN_MESSAGE + applicant.stage
+      elsif stage.empty?
+        stage_index = @stages.index(applicant.stage) || -1
+        applicant.stage = @stages[stage_index + 1]
+      elsif !@stages.include?(stage)
+        puts INVALID_STAGE_MESSAGE
+      else
+        applicant.stage = stage
       end
     end
   end
