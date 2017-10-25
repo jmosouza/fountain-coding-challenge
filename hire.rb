@@ -109,6 +109,13 @@ module Hire
       end
     end
 
+    def show_stats
+      output = @stages.map do |s|
+        [s, @applicants.count { |a| a.stage == s }]
+      end.flatten.join(' ')
+      puts output
+    end
+
     def find_applicant(email)
       @applicants.find { |a| a.email == email }
     end
