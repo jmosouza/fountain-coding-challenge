@@ -39,13 +39,13 @@ module Hire
     VALID_STAGES =
       %w[ManualReview PhoneInterview BackgroundCheck DocumentSigning].freeze
 
-    ALREADY_IN_MESSAGE = 'Already in '.freeze
-    DUPLICATE_APPLICANT_MESSAGE = 'Duplicate applicant'.freeze
-    INVALID_COMMAND_MESSAGE = 'Invalid command'.freeze
-    INVALID_STAGE_MESSAGE = 'Invalid stage'.freeze
-    REJECTED_MESSAGE = 'Rejected '.freeze
-    HIRED_MESSAGE = 'Hired '.freeze
-    FAILED_TO_DECIDE_MESSAGE = 'Failed to decide for '.freeze
+    MSG_ALREADY_IN = 'Already in '.freeze
+    MSG_DUPLICATE_APPLICANT = 'Duplicate applicant'.freeze
+    MSG_INVALID_COMMAND = 'Invalid command'.freeze
+    MSG_INVALID_STAGE = 'Invalid stage'.freeze
+    MSG_REJECTED = 'Rejected '.freeze
+    MSG_HIRED = 'Hired '.freeze
+    MSG_FAILED_TO_DECIDE = 'Failed to decide for '.freeze
 
     def initialize(out = nil)
       @out = out
@@ -60,7 +60,7 @@ module Hire
       send(method_name, *cmd_args)
       output(cmd) if ECHO_COMMANDS.include?(cmd_name)
     rescue ArgumentError, NoMethodError
-      output INVALID_COMMAND_MESSAGE
+      output MSG_INVALID_COMMAND
     end
 
     private
@@ -80,7 +80,7 @@ module Hire
     # Check if the applicant is already in the system before creating a new one.
     def create_applicant(email)
       if @applicants.include? email
-        output DUPLICATE_APPLICANT_MESSAGE
+        output MSG_DUPLICATE_APPLICANT
       else
         @applicants << Applicant.new(email: email, stage: @stages.first)
       end
@@ -91,14 +91,14 @@ module Hire
     def advance_applicant(email, stage = ''.freeze)
       applicant = find_applicant(email)
       if !applicant
-        output NO_SELECTED_APPLICANT_MESSAGE
+        output MSG_NO_SELECTED_APPLICANT
       elsif [stage, @stages.last].include? applicant.stage
-        output ALREADY_IN_MESSAGE + applicant.stage
+        output MSG_ALREADY_IN + applicant.stage
       elsif stage.empty?
         stage_index = @stages.index(applicant.stage) || -1
         applicant.stage = @stages[stage_index + 1]
       elsif !@stages.include?(stage)
-        output INVALID_STAGE_MESSAGE
+        output MSG_INVALID_STAGE
       else
         applicant.stage = stage
       end
@@ -108,11 +108,11 @@ module Hire
       applicant = find_applicant(email)
       hired = decision == '1'.freeze
       if !hired
-        output REJECTED_MESSAGE + email
+        output MSG_REJECTED + email
       elsif applicant.stage == @stages.last
-        output HIRED_MESSAGE + email
+        output MSG_HIRED + email
       else
-        output FAILED_TO_DECIDE_MESSAGE + email
+        output MSG_FAILED_TO_DECIDE + email
       end
     end
 
