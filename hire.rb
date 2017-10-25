@@ -1,5 +1,3 @@
-require "byebug"
-
 module Hire
   # A job applicant.
   class Applicant
