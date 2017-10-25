@@ -2,16 +2,16 @@
 
 ### HOW TO RUN
 
-Make sure you have a file `input.txt` on the same folder as `hire.rb`. Then run on Terminal:
+Make sure you have a file `input.txt` on the same folder as `main.rb` (I included one for your convenience). Then run on Terminal:
 
 ```
-ruby hire.erb
+ruby main.rb
 ```
 
 Run tests using:
 
 ```
-ruby test.erb
+ruby test.rb
 ```
 
 You should see a thumbs up emoji if all pass. Otherwise, you'll see an error message specifying which example failed.
