@@ -1,7 +1,7 @@
 require "byebug"
 
 module Hire
-  # A job applicant
+  # A job applicant.
   class Applicant
     attr_accessor :email
     attr_accessor :stage
@@ -24,6 +24,7 @@ module Hire
     end
   end
 
+  # A hiring service that handles custom commands.
   class Service
     COMMAND_MAP = {
       'DEFINE' => :define_stages,
