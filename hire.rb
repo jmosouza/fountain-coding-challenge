@@ -108,7 +108,7 @@ module Hire
     end
 
     def find_applicant(email)
-      @applicants.first { |a| a.email == email }
+      @applicants.find { |a| a.email == email }
     end
   end
 end
