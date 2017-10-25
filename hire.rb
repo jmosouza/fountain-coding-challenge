@@ -57,6 +57,8 @@ module Hire
       else
         puts INVALID_COMMAND_MESSAGE
       end
+    rescue ArgumentError
+      puts INVALID_COMMAND_MESSAGE
     end
 
     private
