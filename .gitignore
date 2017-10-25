@@ -2,3 +2,5 @@
 
 input.txt
 output.txt
+
+/test/output_*.txt
