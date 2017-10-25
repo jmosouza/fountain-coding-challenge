@@ -106,7 +106,7 @@ module Hire
 
     def decide_applicant(email, decision)
       applicant = find_applicant(email)
-      hired = decision == '1'
+      hired = decision == '1'.freeze
       if !hired
         output REJECTED_MESSAGE + email
       elsif applicant.stage == @stages.last
@@ -119,7 +119,7 @@ module Hire
     def show_stats
       msg = @stages.map do |s|
         [s, @applicants.count { |a| a.stage == s }]
-      end.flatten.join(' ')
+      end.flatten.join(' '.freeze)
       output msg
     end
 
