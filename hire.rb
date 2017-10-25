@@ -20,6 +20,10 @@ module Hire
         false
       end
     end
+
+    def hired=(hired)
+      self.stage = hired ? 'Hired' : 'Rejected'
+    end
   end
 
   # A hiring service that handles custom commands.
@@ -31,8 +35,6 @@ module Hire
       'DECIDE' => :decide_applicant,
       'STATS' => :show_stats
     }.freeze
-
-    ECHO_COMMANDS = %w[DEFINE CREATE ADVANCE].freeze
 
     VALID_STAGES =
       %w[ManualReview PhoneInterview BackgroundCheck DocumentSigning].freeze
@@ -55,8 +57,7 @@ module Hire
     def parse_command(cmd)
       cmd_name, *cmd_args = cmd.split
       method_name = COMMAND_MAP[cmd_name] || ''.freeze
-      send(method_name, *cmd_args)
-      output(cmd) if ECHO_COMMANDS.include?(cmd_name)
+      send(method_name, cmd, *cmd_args)
     rescue ArgumentError, NoMethodError
       output MSG_INVALID_COMMAND
     end
@@ -70,23 +71,25 @@ module Hire
 
     # Define the stages in the hiring process. The available stages are
     # `ManualReview PhoneInterview BackgroundCheck DocumentSigning`.
-    def define_stages(*stages)
+    def define_stages(cmd, *stages)
       @stages = VALID_STAGES & stages
+      output cmd
     end
 
     # Create an applicant with the specified email address.
     # Check if the applicant is already in the system before creating a new one.
-    def create_applicant(email)
+    def create_applicant(cmd, email)
       if @applicants.include? email
         output MSG_DUPLICATE_APPLICANT
       else
         @applicants << Applicant.new(email: email, stage: @stages.first)
+        output cmd
       end
     end
 
     # Advance the applicant to the specified stage.
     # If `stage` parameter is omitted, advance the applicant to the next stage.
-    def advance_applicant(email, stage = ''.freeze)
+    def advance_applicant(cmd, email, stage = ''.freeze)
       applicant = find_applicant(email)
       if !applicant
         output MSG_NO_SELECTED_APPLICANT
@@ -95,30 +98,34 @@ module Hire
       elsif stage.empty?
         stage_index = @stages.index(applicant.stage) || -1
         applicant.stage = @stages[stage_index + 1]
+        output cmd
       elsif !@stages.include?(stage)
         output MSG_INVALID_STAGE
       else
         applicant.stage = stage
+        output cmd
       end
     end
 
-    def decide_applicant(email, decision)
+    def decide_applicant(_, email, decision)
       applicant = find_applicant(email)
       hired = decision == '1'.freeze
       if !hired
+        applicant.hired = false
         output MSG_REJECTED + email
       elsif applicant.stage == @stages.last
+        applicant.hired = true
         output MSG_HIRED + email
       else
         output MSG_FAILED_TO_DECIDE + email
       end
     end
 
-    def show_stats
-      msg = @stages.map do |s|
+    def show_stats(_)
+      stats = (@stages + ['Hired', 'Rejected']).map do |s|
         [s, @applicants.count { |a| a.stage == s }]
-      end.flatten.join(' '.freeze)
-      output msg
+      end.flatten.join(' ')
+      output stats
     end
 
     def find_applicant(email)
