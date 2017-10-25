@@ -1,11 +1,15 @@
 require 'byebug'
 require './hire'
 
-def assert_equal(f1, f2, msg)
-  if f1 == f2
+def assert_equal(expected, actual, msg)
+  if expected == actual
     true
   else
     puts(msg)
+    puts "\n\nEXPECTED:\n\n"
+    puts(expected)
+    puts "\n\nACTUAL:\n\n"
+    puts(actual)
     false
   end
 end
@@ -22,7 +26,7 @@ end
   file_output.close
   file_output = File.new("test/output_#{n}.txt", 'r')
   file_assert = File.new("test/assert_#{n}.txt", 'r')
-  assert_equal(file_output.read, file_assert.read, "Example #{n} failed.") || exit
+  assert_equal(file_assert.read, file_output.read, "Example #{n} failed.") || exit
 end
 
 puts '👍'
