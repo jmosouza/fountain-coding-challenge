@@ -33,6 +33,8 @@ module Hire
       'STATS' => :show_stats
     }.freeze
 
+    ECHO_COMMANDS = %w[DEFINE CREATE ADVANCE].freeze
+
     VALID_STAGES =
       %w[ManualReview PhoneInterview BackgroundCheck DocumentSigning].freeze
 
@@ -44,7 +46,8 @@ module Hire
     HIRED_MESSAGE = 'Hired '.freeze
     FAILED_TO_DECIDE_MESSAGE = 'Failed to decide for '.freeze
 
-    def initialize
+    def initialize(out = nil)
+      @out = out
       @stages = []
       @applicants = []
     end
@@ -52,16 +55,19 @@ module Hire
     # Call the method corresponding to a command.
     def parse_command(cmd)
       cmd_name, *cmd_args = cmd.split
-      if (method = COMMAND_MAP[cmd_name])
-        send(method, *cmd_args)
-      else
-        puts INVALID_COMMAND_MESSAGE
-      end
-    rescue ArgumentError
-      puts INVALID_COMMAND_MESSAGE
+      method_name = COMMAND_MAP[cmd_name] || ''.freeze
+      send(method_name, *cmd_args)
+      output(cmd) if ECHO_COMMANDS.include?(cmd_name)
+    rescue ArgumentError, NoMethodError
+      output INVALID_COMMAND_MESSAGE
     end
 
     private
+
+    # Print a message to @out or stdout, whichever handles `puts`.
+    def output(msg)
+      @out.respond_to?(:puts) ? @out.puts(msg) : puts(msg)
+    end
 
     # Define the stages in the hiring process. The available stages are
     # `ManualReview PhoneInterview BackgroundCheck DocumentSigning`.
@@ -73,7 +79,7 @@ module Hire
     # Check if the applicant is already in the system before creating a new one.
     def create_applicant(email)
       if @applicants.include? email
-        puts DUPLICATE_APPLICANT_MESSAGE
+        output DUPLICATE_APPLICANT_MESSAGE
       else
         @applicants << Applicant.new(email: email, stage: @stages.first)
       end
@@ -84,14 +90,14 @@ module Hire
     def advance_applicant(email, stage = ''.freeze)
       applicant = find_applicant(email)
       if !applicant
-        puts NO_SELECTED_APPLICANT_MESSAGE
+        output NO_SELECTED_APPLICANT_MESSAGE
       elsif [stage, @stages.last].include? applicant.stage
-        puts ALREADY_IN_MESSAGE + applicant.stage
+        output ALREADY_IN_MESSAGE + applicant.stage
       elsif stage.empty?
         stage_index = @stages.index(applicant.stage) || -1
         applicant.stage = @stages[stage_index + 1]
       elsif !@stages.include?(stage)
-        puts INVALID_STAGE_MESSAGE
+        output INVALID_STAGE_MESSAGE
       else
         applicant.stage = stage
       end
@@ -101,19 +107,19 @@ module Hire
       applicant = find_applicant(email)
       hired = decision == '1'
       if !hired
-        puts REJECTED_MESSAGE + email
+        output REJECTED_MESSAGE + email
       elsif applicant.stage == @stages.last
-        puts HIRED_MESSAGE + email
+        output HIRED_MESSAGE + email
       else
-        puts FAILED_TO_DECIDE_MESSAGE + email
+        output FAILED_TO_DECIDE_MESSAGE + email
       end
     end
 
     def show_stats
-      output = @stages.map do |s|
+      msg = @stages.map do |s|
         [s, @applicants.count { |a| a.stage == s }]
       end.flatten.join(' ')
-      puts output
+      output msg
     end
 
     def find_applicant(email)
@@ -122,8 +128,10 @@ module Hire
   end
 end
 
-hire = Hire::Service.new
+file_input = File.new('input.txt', 'r')
+file_output = File.new('output.txt', 'w')
+hire = Hire::Service.new(file_output)
 
-while (cmd = gets.strip) && !cmd.empty?
+while (cmd = file_input.gets&.strip)
   hire.parse_command(cmd)
 end
