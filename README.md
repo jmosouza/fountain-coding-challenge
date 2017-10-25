@@ -1,5 +1,21 @@
 ### Fountain Programming Task
 
+### HOW TO RUN
+
+Make sure you have a file `input.txt` on the same folder as `hire.rb`. Then run on Terminal:
+
+```
+ruby hire.erb
+```
+
+Run tests using:
+
+```
+ruby test.erb
+```
+
+You should see a thumbs up emoji if all pass. Otherwise, you'll see an error message specifying which example failed.
+
 #### Overview
 
 Your task is to write a simple script that simulates a hiring process. This script will read a text file `input.txt` as input where each line is a special command, and write responses to another file `output.txt`. In the following sections, we provide you with command descriptions and the expected output.
